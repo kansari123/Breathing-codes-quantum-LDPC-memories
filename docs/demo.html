@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Breathing Codes: 3D demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060913; --panel:rgba(13,20,36,.86); --line:rgba(124,138,165,.28);
+  --ink:#E8EDF6; --mut:#7C8AA5; --atom:#6EE7D8; --breath:#FFB454;
+  --err:#FF5D5D; --fire:#FF6B4A; --logic:#B58CFF;
+  --disp:'Space Grotesk',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--disp)}
+#c3d{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#c3d.drag{cursor:grabbing}
+#brand{position:fixed;top:14px;left:16px;z-index:5;pointer-events:none}
+#brand h1{font-size:15px;font-weight:700;letter-spacing:.14em}
+#brand p{font-size:11px;color:var(--mut);letter-spacing:.04em;margin-top:2px}
+#tabs{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:6;display:flex;gap:4px;
+  background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px;backdrop-filter:blur(10px)}
+#tabs button{font-family:var(--disp);font-size:12.5px;font-weight:500;color:var(--mut);background:none;border:0;
+  border-radius:999px;padding:7px 14px;cursor:pointer;letter-spacing:.02em;white-space:nowrap}
+#tabs button.on{background:rgba(255,180,84,.16);color:var(--ink)}
+#panel{position:fixed;top:64px;right:14px;z-index:5;width:268px;max-height:calc(100% - 120px);overflow-y:auto;
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;backdrop-filter:blur(10px);
+  scrollbar-width:thin}
+.sec{margin-bottom:14px}
+.sec:last-child{margin-bottom:2px}
+.lbl{font-size:10px;letter-spacing:.18em;color:var(--mut);margin-bottom:6px;font-weight:500}
+#params{font-family:var(--mono);font-size:24px;font-weight:600;letter-spacing:.01em}
+#params .arrow{color:var(--breath);font-size:15px}
+#verify{font-family:var(--mono);font-size:10px;color:var(--mut);margin-top:4px;line-height:1.5}
+#phaseRow,#simRow{font-family:var(--mono);font-size:11px;line-height:1.7;color:var(--ink)}
+#phaseRow b,#simRow b{color:var(--breath);font-weight:600}
+.ctl{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:7px 0;font-size:12px}
+.ctl input[type=range]{flex:1;accent-color:var(--breath);min-width:0}
+.ctl .val{font-family:var(--mono);font-size:11px;color:var(--mut);width:44px;text-align:right}
+.btnrow{display:flex;gap:6px;flex-wrap:wrap}
+button.b{font-family:var(--disp);font-size:12px;font-weight:500;color:var(--ink);background:rgba(124,138,165,.14);
+  border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+button.b:hover{background:rgba(124,138,165,.24)}
+button.b.hot{background:rgba(255,180,84,.18);border-color:rgba(255,180,84,.5)}
+button.b:disabled{opacity:.4;cursor:default}
+.tog{display:flex;align-items:center;gap:7px;font-size:12px;margin:6px 0;cursor:pointer;user-select:none}
+.tog input{accent-color:var(--breath)}
+.leg{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--mut);margin:4px 0}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.dot.sq{border-radius:2px}
+#cap{position:fixed;left:16px;bottom:14px;z-index:5;max-width:min(560px,calc(100% - 32px));
+  font-family:var(--mono);font-size:12px;line-height:1.55;color:var(--ink);
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 12px;backdrop-filter:blur(10px)}
+#cap b{color:var(--breath)}
+#hint{position:fixed;right:16px;bottom:14px;z-index:4;font-size:10.5px;color:var(--mut);letter-spacing:.03em}
+#ptog{display:none;position:fixed;top:64px;right:14px;z-index:7}
+@media (max-width:760px){
+  #panel{display:none;top:auto;bottom:56px;right:10px;left:10px;width:auto;max-height:46%}
+  #panel.open{display:block}
+  #ptog{display:block}
+  #hint{display:none}
+  #cap{bottom:56px;left:10px;right:10px;max-width:none}
+  #brand p{display:none}
+  #tabs{top:10px}
+}
+</style>
+</head>
+<body>
+<canvas id="c3d"></canvas>
+
+<div id="brand"><h1>BREATHING CODES</h1><p>curvature as a runtime variable · drag to orbit</p></div>
+
+<div id="tabs">
+  <button id="tabFlat" class="on">Flat</button>
+  <button id="tabHyp">Hyperbolic</button>
+  <button id="tabBr">Breathing</button>
+</div>
+
+<button class="b" id="ptog">controls</button>
+
+<aside id="panel">
+  <div class="sec">
+    <div class="lbl">CODE</div>
+    <div id="params">[[18, 2, 3]]</div>
+    <div id="verify"></div>
+  </div>
+
+  <div class="sec" id="secPhase" style="display:none">
+    <div class="lbl">BREATH</div>
+    <div id="phaseRow"></div>
+    <div class="btnrow" style="margin-top:7px">
+      <button class="b hot" id="btnBreath">Inhale</button>
+      <label class="tog" style="margin:0"><input type="checkbox" id="ckAuto"> auto-breathe</label>
+    </div>
+    <div class="ctl" id="rowCode" style="margin-top:9px">
+      <span style="font-size:12px">code</span>
+      <div class="btnrow">
+        <button class="b" id="cdT">torus</button>
+        <button class="b hot" id="cdB">Bring</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="lbl">NOISE</div>
+    <div id="simRow"></div>
+    <div class="ctl"><span>error&nbsp;rate</span><input type="range" id="slP" min="0" max="0.05" step="0.002" value="0.014"><span class="val" id="vP">1.4%</span></div>
+    <div class="ctl"><span>tick&nbsp;speed</span><input type="range" id="slS" min="0.5" max="4" step="0.25" value="1.5"><span class="val" id="vS">1.5/s</span></div>
+    <div class="btnrow">
+      <button class="b hot" id="btnPlay">Pause</button>
+      <button class="b" id="btnBurst">Burst +4</button>
+      <button class="b" id="btnClear">Clear</button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="lbl">VIEW</div>
+    <label class="tog"><input type="checkbox" id="ckLog"> show smallest undetectable error (weight = d)</label>
+    <label class="tog"><input type="checkbox" id="ckTiles" checked> show tiles</label>
+    <label class="tog"><input type="checkbox" id="ckSpin" checked> slow spin</label>
+  </div>
+
+  <div class="sec">
+    <div class="lbl">LEGEND</div>
+    <div class="leg"><span class="dot" style="background:var(--atom)"></span> data qubit</div>
+    <div class="leg"><span class="dot" style="background:var(--breath)"></span> breath atom (arrives on inhale)</div>
+    <div class="leg"><span class="dot" style="background:var(--err)"></span> error (click a qubit to flip one)</div>
+    <div class="leg"><span class="dot sq" style="background:var(--fire)"></span> check firing (a parity that failed)</div>
+    <div class="leg"><span class="dot" style="border:2px solid var(--logic);background:none"></span> smallest undetectable error</div>
+    <div style="font-size:10px;color:var(--mut);margin-top:8px;line-height:1.5">
+      Everything labelled is computed live: k by GF(2) rank, d by exhaustive search, syndromes exactly. Z-error / vertex-check sector.
+    </div>
+  </div>
+</aside>
+
+<div id="cap"></div>
+<div id="hint">drag orbit · scroll zoom · click qubit = flip error</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ================================================================
+   BREATHING CODES 3D DEMO
+   flat torus [[18,2,3]]  ·  hyperbolic Bring {5,5} [[30,8,3]]
+   runtime morph (inhale/exhale) to the 4x fine code, d doubles
+   ================================================================ */
+'use strict';
+const RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- tiny vec + GF(2) (pure, testable) ---------- */
+const vadd=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]];
+const vsub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+const vmul=(a,s)=>[a[0]*s,a[1]*s,a[2]*s];
+const vdot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const vcross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const vlen=a=>Math.hypot(a[0],a[1],a[2]);
+const vnorm=a=>vmul(a,1/vlen(a));
+const vlerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
+
+function parity(x){let p=0n,v=x;while(v){v&=v-1n;p^=1n;}return p;}          // popcount mod 2
+function echelon(rows){                                                     // GF(2) row reduce
+  const piv=[];const R=rows.slice();
+  for(let i=0;i<R.length;i++){
+    let r=R[i]; for(const [p,pr] of piv){ if((r>>p)&1n) r^=pr; }
+    if(r===0n) continue;
+    let hb=-1n,t=r; while(t){hb++;t>>=1n;}
+    piv.push([hb,r]);
+  }
+  return piv;                                                               // [[pivotBit,row],...]
+}
+const rank=rows=>echelon(rows).length;
+function reduceVec(v,piv){let r=v;for(const [p,pr] of piv){if((r>>p)&1n)r^=pr;}return r;}
+
+/* ---------- complexes ----------
+   complex = { V:[{key,pos,param?}], E:[{a,b,pa?,pb?,uses:[{f,k}]}],
+               F:[{cycle:[vkeys], edges:[eIdx], center, param?}], geom:'torus'|'flat' } */
+
+const TL=3, TR=0.95, Tr=0.42;
+const tmap=(u,v)=>{const th=2*Math.PI*u/TL, ph=2*Math.PI*v/TL;
+  return [(TR+Tr*Math.cos(ph))*Math.cos(th), Tr*Math.sin(ph), (TR+Tr*Math.cos(ph))*Math.sin(th)];};
+const tnorm=(u,v)=>{const th=2*Math.PI*u/TL, ph=2*Math.PI*v/TL;
+  return [Math.cos(ph)*Math.cos(th), Math.sin(ph), Math.cos(ph)*Math.sin(th)];};
+
+function buildTorus(){
+  const V=[],E=[],F=[],vk={},ek={};
+  for(let i=0;i<TL;i++)for(let j=0;j<TL;j++){vk[i+','+j]=V.length;V.push({key:i+','+j,param:[i,j],pos:tmap(i,j)});}
+  const pk=(a,b)=>a<b?a+'|'+b:b+'|'+a;
+  const addE=(ka,pa,kb,pb)=>{const id=E.length;E.push({a:ka,b:kb,pa,pb,uses:[]});ek[pk(ka,kb)]=id;return id;};
+  for(let i=0;i<TL;i++)for(let j=0;j<TL;j++){
+    addE(i+','+j,[i,j],((i+1)%TL)+','+j,[i+1,j]);          // horizontal
+    addE(i+','+j,[i,j],i+','+((j+1)%TL),[i,j+1]);          // vertical
+  }
+  for(let i=0;i<TL;i++)for(let j=0;j<TL;j++){
+    const cyc=[i+','+j, ((i+1)%TL)+','+j, ((i+1)%TL)+','+((j+1)%TL), i+','+((j+1)%TL)];
+    const par=[[i,j],[i+1,j],[i+1,j+1],[i,j+1]];
+    const edges=[];const f=F.length;
+    for(let k=0;k<4;k++){const e=ek[pk(cyc[k],cyc[(k+1)%4])];edges.push(e);E[e].uses.push({f,k});}
+    F.push({cycle:cyc,edges,paramCycle:par,param:[i+.5,j+.5],center:tmap(i+.5,j+.5)});
+  }
+  return {V,E,F,vk,geom:'torus'};
+}
+
+function buildBring(){
+  const g=(1+Math.sqrt(5))/2, raw=[];
+  for(const s1 of [1,-1])for(const s2 of [1,-1]){
+    raw.push([0,s1,s2*g]);raw.push([s1,s2*g,0]);raw.push([s2*g,0,s1]);
+  }
+  const RS=1.14, V=raw.map((p,i)=>({key:'v'+i,pos:vmul(vnorm(p),RS)}));
+  const vk={};V.forEach((v,i)=>vk[v.key]=i);
+  const E=[],ek={},pk=(a,b)=>a<b?a+'|'+b:b+'|'+a;
+  for(let i=0;i<12;i++)for(let j=i+1;j<12;j++)
+    if(vlen(vsub(V[i].pos,V[j].pos))<1.3*RS){ek[pk('v'+i,'v'+j)]=E.length;E.push({a:'v'+i,b:'v'+j,uses:[]});}
+  const nbr=i=>{const out=[];for(let j=0;j<12;j++)if(i!==j&&ek[pk('v'+i,'v'+j)]!==undefined)out.push(j);return out;};
+  const F=[];
+  for(let i=0;i<12;i++){
+    const n=vnorm(V[i].pos);
+    let t1=vcross(n,[0,1,0]); if(vlen(t1)<1e-6)t1=vcross(n,[1,0,0]); t1=vnorm(t1);
+    const t2=vcross(n,t1);
+    const ns=nbr(i).map(j=>({j,ang:Math.atan2(vdot(V[j].pos,t2),vdot(V[j].pos,t1))})).sort((a,b)=>a.ang-b.ang).map(o=>o.j);
+    const cyc=ns.map(j=>'v'+j), edges=[], f=F.length;
+    for(let k=0;k<5;k++){const e=ek[pk(cyc[k],cyc[(k+1)%5])];edges.push(e);E[e].uses.push({f,k});}
+    let c=[0,0,0];ns.forEach(j=>c=vadd(c,V[j].pos));c=vmul(c,1/5);
+    F.push({cycle:cyc,edges,center:c,about:i});
+  }
+  return {V,E,F,vk,geom:'flat'};
+}
+
+/* points along an edge / spoke, respecting geometry */
+function edgePoint(cx,e,t){
+  const E=cx.E[e];
+  if(cx.geom==='torus'){const p=vlerp(E.pa,E.pb,t);return tmap(p[0],p[1]);}
+  return vlerp(cx.V[cx.vk[E.a]].pos, cx.V[cx.vk[E.b]].pos, t);
+}
+function edgeSamples(cx,e,t0,t1,n){
+  const pts=[];for(let s=0;s<=n;s++)pts.push(edgePoint(cx,e,t0+(t1-t0)*s/n));return pts;
+}
+function spokePoint(cx,f,k,t){                       // face center -> mid of edge k
+  const F=cx.F[f], e=F.edges[k];
+  if(cx.geom==='torus'){
+    const pm=vlerp(cx.E[e].pa,cx.E[e].pb,.5), p=vlerp(F.param,pm,t);return tmap(p[0],p[1]);
+  }
+  return vlerp(F.center, edgePoint(cx,e,.5), t);
+}
+
+/* ---------- the code: masks, refinement, verification ---------- */
+function makeCode(cx){
+  const Ecount=cx.E.length;
+  const spokeIdx={}; let sN=0;
+  cx.F.forEach((F,f)=>F.edges.forEach((_,k)=>{spokeIdx[f+'_'+k]=2*Ecount+sN++;}));
+  const bitA=e=>BigInt(e), bitB=e=>BigInt(Ecount+e), bitS=(f,k)=>BigInt(spokeIdx[f+'_'+k]);
+  const one=b=>1n<<b;
+  const half=(e,vkey)=>cx.E[e].a===vkey?one(bitA(e)):one(bitB(e));
+
+  /* coarse checks */
+  const cvMask=cx.V.map(v=>{let m=0n;cx.E.forEach((E,e)=>{if(E.a===v.key||E.b===v.key)m|=one(bitA(e));});return m;});
+  const cfMask=cx.F.map(F=>{let m=0n;F.edges.forEach(e=>m|=one(bitA(e)));return m;});
+
+  /* fine checks + quads */
+  const fvMask=[], fvWho=[];   // masks + marker keys
+  cx.V.forEach(v=>{let m=0n;cx.E.forEach((E,e)=>{if(E.a===v.key)m|=half(e,E.a);else if(E.b===v.key)m|=half(e,E.b);});
+    fvMask.push(m);fvWho.push('v:'+v.key);});
+  cx.E.forEach((E,e)=>{let m=one(bitA(e))|one(bitB(e));E.uses.forEach(u=>m|=one(bitS(u.f,u.k)));
+    fvMask.push(m);fvWho.push('m:'+e);});
+  cx.F.forEach((F,f)=>{let m=0n;F.edges.forEach((_,k)=>m|=one(bitS(f,k)));fvMask.push(m);fvWho.push('c:'+f);});
+  const quads=[];
+  cx.F.forEach((F,f)=>{const mm=F.edges.length;
+    for(let k=0;k<mm;k++){const kp=(k-1+mm)%mm, e1=F.edges[kp], e2=F.edges[k], vkey=F.cycle[k];
+      quads.push({f,k,mask:half(e1,vkey)|one(bitS(f,kp))|one(bitS(f,k))|half(e2,vkey),vkey,e1,e2});
+    }});
+
+  /* live-verified k */
+  const kCoarse=Ecount-rank(cvMask)-rank(cfMask);
+  const fineQ=2*Ecount+sN;
+  const kFine=fineQ-rank(fvMask)-rank(quads.map(q=>q.mask));
+
+  /* exact d, coarse: smallest error set with empty syndrome that is not a stabilizer product */
+  const fpiv=echelon(cfMask);
+  const okCycle=S=>cvMask.every(m=>parity(S&m)===0n);
+  let dCoarse=0, logical=null;
+  outer:
+  for(let w=1;w<=4;w++){
+    const idx=Array.from({length:w},(_,i)=>i);
+    while(true){
+      let S=0n;idx.forEach(e=>S|=one(bitA(e)));
+      if(okCycle(S)&&reduceVec(S,fpiv)!==0n){dCoarse=w;logical=idx.slice();break outer;}
+      let i=w-1;while(i>=0&&idx[i]===Ecount-w+i)i--;
+      if(i<0)break;idx[i]++;for(let j=i+1;j<w;j++)idx[j]=idx[j-1]+1;
+    }
+  }
+  /* fine lift of that logical (both halves of each edge): verify it */
+  let liftOK=false, lift=null;
+  if(logical){
+    let S=0n;logical.forEach(e=>{S|=one(bitA(e))|one(bitB(e));});
+    const qpiv=echelon(quads.map(q=>q.mask));
+    liftOK=fvMask.every(m=>parity(S&m)===0n)&&reduceVec(S,qpiv)!==0n;
+    lift=logical.slice();
+  }
+  return {cx,Ecount,sN,spokeIdx,bitA,bitB,bitS,one,half,
+          cvMask,cfMask,fvMask,fvWho,quads,kCoarse,kFine,dCoarse,logical,lift,liftOK,fineQ};
+}
+
+/* ---------- three.js scene ---------- */
+const canvas=document.getElementById('c3d');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setClearColor(0x060913);
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(45,1,0.1,50);
+scene.add(new THREE.AmbientLight(0xffffff,0.75));
+const dl=new THREE.DirectionalLight(0xffffff,0.8);dl.position.set(2,3,4);scene.add(dl);
+
+const COL={atom:0x6EE7D8,breath:0xFFB454,err:0xFF5D5D,fire:0xFF6B4A,logic:0xB58CFF,
+           lat:0x33415C,mark:0x4A5878,tile:0x24365C,shell:0x14203A};
+const geoQ=new THREE.SphereGeometry(0.043,18,14);
+const geoHalo=new THREE.SphereGeometry(0.066,16,12);
+const geoMark=new THREE.OctahedronGeometry(0.028,0);
+const geoRes=new THREE.SphereGeometry(0.02,10,8);
+
+function tube(pts,r,mat){
+  const v=pts.map(p=>new THREE.Vector3(p[0],p[1],p[2]));
+  const curve=pts.length===2?new THREE.LineCurve3(v[0],v[1]):new THREE.CatmullRomCurve3(v);
+  return new THREE.Mesh(new THREE.TubeGeometry(curve,Math.max(1,pts.length*2),r,5,false),mat);
+}
+function patchMesh(corners,sub,offset,mapFn){  // bilinear patch from 4 corners (param or 3D)
+  const P=[];
+  for(let a=0;a<=sub;a++)for(let b=0;b<=sub;b++){
+    const u=a/sub,w=b/sub;
+    const p01=vlerp(corners[0],corners[1],u), p32=vlerp(corners[3],corners[2],u);
+    let p=vlerp(p01,p32,w);
+    if(mapFn)p=mapFn(p); p=vadd(p,offset(p));
+    P.push(p);
+  }
+  const idxs=[];
+  for(let a=0;a<sub;a++)for(let b=0;b<sub;b++){
+    const i=a*(sub+1)+b;
+    idxs.push(i,i+1,i+sub+1, i+1,i+sub+2,i+sub+1);
+  }
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(P.flat(),3));
+  g.setIndex(idxs);g.computeVertexNormals();
+  return g;
+}
+const tileMat=v=>new THREE.MeshBasicMaterial({color:COL.tile,transparent:true,opacity:v,
+  side:THREE.DoubleSide,depthWrite:false});
+
+/* ---------- build a full renderable view of one code ---------- */
+function buildView(name){
+  const cx=name==='torus'?buildTorus():buildBring();
+  const code=makeCode(cx);
+  const root=new THREE.Group();scene.add(root);root.visible=false;
+
+  const latMat=new THREE.MeshLambertMaterial({color:COL.lat});
+  const markMat=new THREE.MeshLambertMaterial({color:COL.mark});
+
+  /* shell for torus */
+  if(name==='torus'){
+    const sh=new THREE.Mesh(new THREE.TorusGeometry(TR,Tr*0.985,40,72),
+      new THREE.MeshBasicMaterial({color:COL.shell,transparent:true,opacity:0.28,depthWrite:false,side:THREE.BackSide}));
+    sh.rotation.x=Math.PI/2;root.add(sh);
+  }
+
+  /* lattice edges (persist across phases: halves are colinear with the original edge) */
+  cx.E.forEach((E,e)=>root.add(tube(edgeSamples(cx,e,0,1,cx.geom==='torus'?12:1),0.011,latMat)));
+
+  /* coarse tiles + fine quad tiles */
+  const off=p=>{
+    if(cx.geom==='torus')return [0,0,0];       // torus patches built in param space, offset below
+    return vmul(vnorm(p),0.012);
+  };
+  const coarseTiles=[], fineTiles=[];
+  cx.F.forEach((F,f)=>{
+    let mesh;
+    if(cx.geom==='torus'){
+      const g=patchMesh(F.paramCycle,6,p=>vmul(tnorm(p[0],p[1]),0.024),p=>tmap(p[0],p[1]));
+      mesh=new THREE.Mesh(g,tileMat(0.16));
+    }else{
+      const pts=F.cycle.map(k=>cx.V[cx.vk[k]].pos);
+      const g=new THREE.BufferGeometry();
+      const c=F.center, tris=[];
+      for(let k=0;k<5;k++){tris.push(...vadd(c,off(c)),...vadd(pts[k],off(pts[k])),...vadd(pts[(k+1)%5],off(pts[(k+1)%5])));}
+      g.setAttribute('position',new THREE.Float32BufferAttribute(tris,3));g.computeVertexNormals();
+      mesh=new THREE.Mesh(g,tileMat(0.13));
+    }
+    mesh.renderOrder=2;root.add(mesh);coarseTiles.push(mesh);
+  });
+  code.quads.forEach(q=>{
+    const F=cx.F[q.f], mm=F.edges.length, kp=(q.k-1+mm)%mm;
+    let mesh;
+    if(cx.geom==='torus'){
+      const vP=F.paramCycle[q.k];
+      const m1=vlerp(cx.E[q.e1].pa,cx.E[q.e1].pb,.5), m2=vlerp(cx.E[q.e2].pa,cx.E[q.e2].pb,.5);
+      // keep params in this face's frame (wrap-safe): pull mids toward face param
+      const fix=pm=>{const p=pm.slice();for(let d=0;d<2;d++){while(p[d]-F.param[d]>TL/2)p[d]-=TL;while(F.param[d]-p[d]>TL/2)p[d]+=TL;}return p;};
+      const g=patchMesh([vP,fix(m1),F.param,fix(m2)],4,p=>vmul(tnorm(p[0],p[1]),0.024),p=>tmap(p[0],p[1]));
+      mesh=new THREE.Mesh(g,tileMat(0.2));
+    }else{
+      const vP=cx.V[cx.vk[q.vkey]].pos, m1=edgePoint(cx,q.e1,.5), m2=edgePoint(cx,q.e2,.5);
+      const g=patchMesh([vP,m1,F.center,m2],2,off,null);
+      mesh=new THREE.Mesh(g,tileMat(0.2));
+    }
+    mesh.renderOrder=2;mesh.material.opacity=0;root.add(mesh);fineTiles.push(mesh);
+  });
+
+  /* check markers: coarse verts always; mids + centers appear on inhale */
+  const marks={};   // key -> {mesh, baseScale}
+  const addMark=(key,pos,fine)=>{
+    const m=new THREE.Mesh(geoMark,markMat.clone());
+    m.position.set(pos[0],pos[1],pos[2]);m.userData.fineOnly=fine;
+    if(fine){m.material.transparent=true;m.material.opacity=0;m.visible=false;}
+    root.add(m);marks[key]={mesh:m};
+  };
+  cx.V.forEach(v=>addMark('v:'+v.key,v.pos,false));
+  cx.E.forEach((E,e)=>addMark('m:'+e,edgePoint(cx,e,.5),true));
+  cx.F.forEach((F,f)=>addMark('c:'+f,cx.geom==='torus'?tmap(F.param[0],F.param[1]):F.center,true));
+
+  /* spoke tubes, grouped per face so they can grow from the center */
+  const spokes=[];
+  cx.F.forEach((F,f)=>{
+    F.edges.forEach((_,k)=>{
+      const pts=[];const n=cx.geom==='torus'?6:1;
+      for(let s=0;s<=n;s++)pts.push(spokePoint(cx,f,k,s/n));
+      const grp=new THREE.Group();
+      const c=pts[0];grp.position.set(c[0],c[1],c[2]);
+      const local=pts.map(p=>vsub(p,c));
+      grp.add(tube(local,0.009,latMat));
+      grp.scale.setScalar(0.0001);grp.visible=false;root.add(grp);
+      spokes.push(grp);
+    });
+  });
+
+  /* qubits: A on every edge (persist), B + spokes appear on inhale */
+  const qubits={};  // id -> {mesh, halo, kind, posCoarse?, posFine, resSlot?}
+  const mkQ=(id,kind,pos)=>{
+    const mat=new THREE.MeshLambertMaterial({color:kind==='A'?COL.atom:COL.breath});
+    const m=new THREE.Mesh(geoQ,mat);m.position.set(pos[0],pos[1],pos[2]);
+    const halo=new THREE.Mesh(geoHalo,new THREE.MeshBasicMaterial({color:COL.logic,transparent:true,opacity:0.55,depthWrite:false}));
+    halo.visible=false;m.add(halo);
+    m.userData.qid=id;root.add(m);
+    qubits[id]={mesh:m,halo,kind,posFine:pos};
+    return qubits[id];
+  };
+  cx.E.forEach((E,e)=>{
+    const q=mkQ('A'+e,'A',edgePoint(cx,e,.5));
+    q.posCoarse=edgePoint(cx,e,.5);q.posFine=edgePoint(cx,e,.25);
+  });
+  cx.E.forEach((E,e)=>{const q=mkQ('B'+e,'B',edgePoint(cx,e,.75));q.mesh.visible=false;});
+  cx.F.forEach((F,f)=>F.edges.forEach((_,k)=>{
+    const q=mkQ('S'+f+'_'+k,'B',spokePoint(cx,f,k,.5));q.mesh.visible=false;
+  }));
+
+  /* reservoir ring */
+  const resGrp=new THREE.Group();root.add(resGrp);
+  const newIds=[...cx.E.map((_,e)=>'B'+e),
+                ...cx.F.flatMap((F,f)=>F.edges.map((_,k)=>'S'+f+'_'+k))];
+  const resMat=new THREE.MeshLambertMaterial({color:COL.breath,transparent:true,opacity:0.55});
+  newIds.forEach((id,i)=>{
+    const s=new THREE.Mesh(geoRes,resMat);
+    const a=i/newIds.length*Math.PI*2;
+    s.position.set(2.05*Math.cos(a),-1.55,2.05*Math.sin(a));
+    resGrp.add(s);qubits[id].resSlot=s;
+  });
+
+  const st={phase:'coarse',errors:new Set(),round:0,hold:0,auto:false,dirty:true};
+  return {name,cx,code,root,coarseTiles,fineTiles,marks,spokes,qubits,resGrp,newIds,st};
+}
+
+const views={};
+function getView(n){if(!views[n])views[n]=buildView(n);return views[n];}
+
+/* ---------- state / sim ---------- */
+let active=getView('torus');active.root.visible=true;
+let tab='flat', breathCode='bring', playing=true, pErr=0.014, tickHz=1.5;
+let showLog=false, showTiles=true, spin=!RM;
+
+function liveIds(v){
+  if(v.st.phase==='fine'||v.st.phase==='exhaling')
+    return Object.keys(v.qubits);
+  return v.cx.E.map((_,e)=>'A'+e);
+}
+function bitOf(v,id){
+  const c=v.code;
+  if(id[0]==='A')return c.one(c.bitA(+id.slice(1)));
+  if(id[0]==='B')return c.one(c.bitB(+id.slice(1)));
+  const [f,k]=id.slice(1).split('_').map(Number);return c.one(c.bitS(f,k));
+}
+function errVec(v){let S=0n;v.st.errors.forEach(id=>S|=bitOf(v,id));return S;}
+
+function checksNow(v){
+  const c=v.code;
+  if(v.st.phase==='coarse'||v.st.phase==='inhaling')
+    return v.cx.V.map((vv,i)=>({mask:c.cvMask[i],key:'v:'+vv.key}));
+  return c.fvMask.map((m,i)=>({mask:m,key:c.fvWho[i]}));
+}
+
+function syncErrors(v){
+  for(const id in v.qubits){
+    const q=v.qubits[id], err=v.st.errors.has(id);
+    q.mesh.material.color.setHex(err?COL.err:(q.kind==='A'?COL.atom:COL.breath));
+    q.mesh.userData.pulse=err?Math.max(q.mesh.userData.pulse||0,1):0;
+  }
+}
+function syncSyndrome(v){
+  const S=errVec(v), fired=new Set();
+  checksNow(v).forEach(ch=>{if(parity(S&ch.mask))fired.add(ch.key);});
+  for(const key in v.marks){
+    const M=v.marks[key].mesh, hot=fired.has(key);
+    M.material.color.setHex(hot?COL.fire:COL.mark);
+    M.userData.hot=hot;
+  }
+  v.firedN=fired.size;
+}
+function syncLogical(v){
+  const on=showLog&&v.code.logical;
+  const set=new Set();
+  if(on){
+    v.code.logical.forEach(e=>{
+      set.add('A'+e);
+      if((v.st.phase==='fine')&&v.code.liftOK)set.add('B'+e);
+    });
+  }
+  for(const id in v.qubits)v.qubits[id].halo.visible=set.has(id);
+}
+function syncTiles(v){
+  const morph=(v.st.phase==='inhaling'||v.st.phase==='exhaling');
+  if(morph){ if(!showTiles){v.coarseTiles.forEach(t=>t.visible=false);v.fineTiles.forEach(t=>t.visible=false);} return; }
+  const cOn=showTiles&&v.st.phase==='coarse', fOn=showTiles&&v.st.phase==='fine';
+  v.coarseTiles.forEach(t=>{t.visible=cOn;if(cOn)t.material.opacity=v.cx.geom==='torus'?0.16:0.13;});
+  v.fineTiles.forEach(t=>{t.visible=fOn;if(fOn)t.material.opacity=0.2;});
+}
+function refreshAll(v){syncErrors(v);syncSyndrome(v);syncLogical(v);syncTiles(v);updatePanel();}
+
+/* ---------- tweens ---------- */
+const tweens=[];
+const ease=t=>1-Math.pow(1-t,3);
+function tween(dur,delay,fn,done){tweens.push({t0:now()+delay,dur,fn,done});}
+let _n=performance.now();const now=()=>_n;
+
+/* ---------- morph ---------- */
+function startInhale(v){
+  if(v.st.phase!=='coarse')return;
+  v.st.phase='inhaling';v.st.hold=0;
+  const D=RM?220:1500, base=RM?0:450;
+  /* A qubits glide mid -> quarter */
+  for(let e=0;e<v.cx.E.length;e++){
+    const q=v.qubits['A'+e];
+    tween(D*0.55,base*0.2,t=>{const p=vlerp(q.posCoarse,q.posFine,ease(t));q.mesh.position.set(p[0],p[1],p[2]);});
+  }
+  /* flights */
+  v.newIds.forEach((id,i)=>{
+    const q=v.qubits[id], slot=q.resSlot;
+    const start=new THREE.Vector3();slot.getWorldPosition(start);
+    slot.visible=false;q.mesh.visible=true;
+    const tgt=q.posFine, s=[start.x,start.y,start.z];
+    tween(RM?200:650,(RM?0:i/v.newIds.length*600),t=>{
+      const tt=ease(t), p=vlerp(s,tgt,tt);
+      q.mesh.position.set(p[0],p[1]+Math.sin(tt*Math.PI)*0.35*(RM?0:1),p[2]);
+    });
+  });
+  /* spokes grow + fine marks fade in */
+  v.spokes.forEach(g=>{g.visible=true;tween(D*0.5,base+D*0.25,t=>g.scale.setScalar(0.0001+ease(t)));});
+  for(const key in v.marks){const m=v.marks[key].mesh;
+    if(m.userData.fineOnly){m.visible=true;tween(D*0.4,base+D*0.35,t=>m.material.opacity=t);}}
+  /* tiles: coarse dissolve into fine quads */
+  v.coarseTiles.forEach(tl=>tween(D*0.5,base+D*0.2,t=>{tl.material.opacity=(v.cx.geom==='torus'?0.16:0.13)*(1-t);if(t>=1)tl.visible=false;}));
+  v.fineTiles.forEach(tl=>{tl.visible=showTiles;tween(D*0.5,base+D*0.45,t=>tl.material.opacity=0.2*t);});
+  tween(1,base+D,()=>{},null);
+  setTimeout(()=>{
+    v.st.phase='fine';v.st.hold=0;
+    foldFlash(v);refreshAll(v);setCap();
+  },base+D+40);
+  refreshAll(v);setCap();
+}
+function startExhale(v){
+  if(v.st.phase!=='fine')return;
+  v.st.phase='exhaling';v.st.hold=0;
+  /* B + spoke qubits are measured out: their recorded errors leave with them */
+  v.newIds.forEach(id=>v.st.errors.delete(id));
+  const D=RM?220:1300, base=RM?0:250;
+  v.newIds.forEach((id,i)=>{
+    const q=v.qubits[id], slot=q.resSlot;
+    const end=new THREE.Vector3();slot.getWorldPosition(end);
+    const s=[q.mesh.position.x,q.mesh.position.y,q.mesh.position.z];
+    tween(RM?200:600,(RM?0:i/v.newIds.length*500),t=>{
+      const tt=ease(t),p=vlerp(s,[end.x,end.y,end.z],tt);
+      q.mesh.position.set(p[0],p[1]+Math.sin(tt*Math.PI)*0.3*(RM?0:1),p[2]);
+      if(t>=1){q.mesh.visible=false;slot.visible=true;
+        const pf=q.posFine;q.mesh.position.set(pf[0],pf[1],pf[2]);}
+    });
+  });
+  for(let e=0;e<v.cx.E.length;e++){
+    const q=v.qubits['A'+e];
+    tween(D*0.55,base+D*0.3,t=>{const p=vlerp(q.posFine,q.posCoarse,ease(t));q.mesh.position.set(p[0],p[1],p[2]);});
+  }
+  v.spokes.forEach(g=>tween(D*0.45,base,t=>{g.scale.setScalar(Math.max(0.0001,1-ease(t)));if(t>=1)g.visible=false;}));
+  for(const key in v.marks){const m=v.marks[key].mesh;
+    if(m.userData.fineOnly)tween(D*0.35,base,t=>{m.material.opacity=1-t;if(t>=1)m.visible=false;});}
+  v.fineTiles.forEach(tl=>tween(D*0.4,base,t=>{tl.material.opacity=0.2*(1-t);if(t>=1)tl.visible=false;}));
+  v.coarseTiles.forEach(tl=>{tl.visible=showTiles;
+    tween(D*0.4,base+D*0.4,t=>tl.material.opacity=(v.cx.geom==='torus'?0.16:0.13)*t);});
+  setTimeout(()=>{
+    v.st.phase='coarse';v.st.hold=0;foldFlash(v);refreshAll(v);setCap();
+  },base+D+40);
+  refreshAll(v);setCap();
+}
+function foldFlash(v){   // one deterministic parity stitches old and new syndromes together
+  const tiles=v.st.phase==='fine'?v.fineTiles:v.coarseTiles;
+  tiles.forEach(tl=>{const b=tl.material.opacity;
+    tween(RM?150:520,0,t=>{tl.material.opacity=b+Math.sin(t*Math.PI)*0.3;});});
+}
+function snapCoarse(v){
+  if(v.st.phase==='coarse')return;
+  v.st.phase='coarse';v.st.hold=0;
+  v.newIds.forEach(id=>{v.st.errors.delete(id);const q=v.qubits[id];
+    q.mesh.visible=false;q.resSlot.visible=true;
+    const pf=q.posFine;q.mesh.position.set(pf[0],pf[1],pf[2]);});
+  v.cx.E.forEach((_,e)=>{const q=v.qubits['A'+e];q.mesh.position.set(q.posCoarse[0],q.posCoarse[1],q.posCoarse[2]);});
+  v.spokes.forEach(g=>{g.visible=false;g.scale.setScalar(0.0001);});
+  for(const key in v.marks){const m=v.marks[key].mesh;if(m.userData.fineOnly){m.visible=false;m.material.opacity=0;}}
+  v.fineTiles.forEach(tl=>{tl.visible=false;tl.material.opacity=0;});
+  v.coarseTiles.forEach(tl=>{tl.visible=showTiles;tl.material.opacity=v.cx.geom==='torus'?0.16:0.13;});
+}
+
+/* ---------- ticks ---------- */
+function tick(){
+  const v=active;
+  if(playing&&(v.st.phase==='coarse'||v.st.phase==='fine')){
+    v.st.round++;v.st.hold++;
+    liveIds(v).forEach(id=>{if(Math.random()<pErr){
+      if(v.st.errors.has(id))v.st.errors.delete(id);else v.st.errors.add(id);}});
+    if(tab==='breathe'&&v.st.auto){
+      if(v.st.phase==='coarse'&&v.st.hold>=6)startInhale(v);
+      else if(v.st.phase==='fine'&&v.st.hold>=12)startExhale(v);
+    }
+    refreshAll(v);
+  }
+}
+let tickTimer=setInterval(tick,1000/tickHz);
+function setHz(h){tickHz=h;clearInterval(tickTimer);tickTimer=setInterval(tick,1000/h);}
+
+/* ---------- camera / controls ---------- */
+let cam={r:3.6,th:0.95,ph:1.12}, dragging=false, px=0,py=0, downAt=[0,0], userZoomed=false;
+const ptrs=new Map(); let pinch0=0,r0=cam.r;
+function applyCam(){
+  const sp=Math.sin(cam.ph),x=cam.r*sp*Math.cos(cam.th),z=cam.r*sp*Math.sin(cam.th),y=cam.r*Math.cos(cam.ph);
+  camera.position.set(x,y,z);camera.lookAt(0,-0.08,0);
+}
+canvas.addEventListener('pointerdown',e=>{
+  canvas.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,[e.clientX,e.clientY]);
+  if(ptrs.size===1){dragging=true;canvas.classList.add('drag');px=e.clientX;py=e.clientY;downAt=[e.clientX,e.clientY];
+    if(spin){spin=false;document.getElementById('ckSpin').checked=false;}}
+  else if(ptrs.size===2){const p=[...ptrs.values()];pinch0=Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1]);r0=cam.r;}
+});
+canvas.addEventListener('pointermove',e=>{
+  if(!ptrs.has(e.pointerId))return;
+  ptrs.set(e.pointerId,[e.clientX,e.clientY]);
+  if(ptrs.size===2){const p=[...ptrs.values()];const d=Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1]);
+    userZoomed=true;cam.r=Math.min(9,Math.max(1.6,r0*pinch0/Math.max(30,d)));applyCam();return;}
+  if(!dragging)return;
+  cam.th+=(e.clientX-px)*0.0055; cam.ph-=(e.clientY-py)*0.0055;
+  cam.ph=Math.min(2.9,Math.max(0.25,cam.ph));
+  px=e.clientX;py=e.clientY;applyCam();
+});
+function endPtr(e){
+  if(ptrs.has(e.pointerId)&&ptrs.size===1&&dragging){
+    const d=Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1]);
+    if(d<6)clickPick(e);
+  }
+  ptrs.delete(e.pointerId);if(ptrs.size===0){dragging=false;canvas.classList.remove('drag');}
+}
+canvas.addEventListener('pointerup',endPtr);canvas.addEventListener('pointercancel',endPtr);
+canvas.addEventListener('wheel',e=>{e.preventDefault();userZoomed=true;
+  cam.r=Math.min(9,Math.max(1.6,cam.r*(1+e.deltaY*0.0012)));applyCam();},{passive:false});
+
+const ray=new THREE.Raycaster(), mouse=new THREE.Vector2();
+function clickPick(e){
+  const v=active;
+  if(v.st.phase==='inhaling'||v.st.phase==='exhaling')return;
+  const rct=canvas.getBoundingClientRect();
+  mouse.x=((e.clientX-rct.left)/rct.width)*2-1;
+  mouse.y=-((e.clientY-rct.top)/rct.height)*2+1;
+  ray.setFromCamera(mouse,camera);
+  const live=new Set(liveIds(v));
+  const targets=Object.values(v.qubits).filter(q=>q.mesh.visible&&live.has(q.mesh.userData.qid)).map(q=>q.mesh);
+  const hit=ray.intersectObjects(targets,false)[0];
+  if(hit){const id=hit.object.userData.qid;
+    if(v.st.errors.has(id))v.st.errors.delete(id);else v.st.errors.add(id);
+    refreshAll(v);}
+}
+
+/* ---------- UI ---------- */
+const $=id=>document.getElementById(id);
+const capEl=$('cap');
+function fmt(n){return n.toLocaleString();}
+function updatePanel(){
+  const v=active, c=v.code, fine=(v.st.phase==='fine');
+  const morph=(v.st.phase==='inhaling'||v.st.phase==='exhaling');
+  const n0=c.Ecount, n1=c.fineQ;
+  let ptxt;
+  if(morph)ptxt=`[[${n0} <span class="arrow">${v.st.phase==='inhaling'?'→':'←'}</span> ${n1}, ${c.kCoarse}, ${c.dCoarse} <span class="arrow">${v.st.phase==='inhaling'?'→':'←'}</span> ${2*c.dCoarse}]]`;
+  else if(fine)ptxt=`[[${n1}, ${c.kFine}, ${2*c.dCoarse}]]`;
+  else ptxt=`[[${n0}, ${c.kCoarse}, ${c.dCoarse}]]`;
+  $('params').innerHTML=ptxt;
+  $('verify').innerHTML=
+    `k = ${c.kCoarse} coarse / ${c.kFine} fine · GF(2) rank, live ✓<br>`+
+    `d = ${c.dCoarse} exact (search) · fine ${c.liftOK?'≥ '+2*c.dCoarse+' (lift verified ✓)':'bound'}`+
+    (morph?`<br>morph d ≥ ${c.dCoarse} on certified schedules`:'');
+  const resN=v.newIds.filter(id=>v.qubits[id].resSlot.visible).length;
+  $('phaseRow').innerHTML=`phase <b>${v.st.phase}</b> · hold ${v.st.hold} rounds<br>reservoir <b>${resN}</b> atoms`;
+  $('btnBreath').textContent=v.st.phase==='fine'?'Exhale':'Inhale';
+  $('btnBreath').disabled=morph||tab!=='breathe';
+  $('simRow').innerHTML=`round <b>${v.st.round}</b> · errors <b>${v.st.errors.size}</b> · checks firing <b>${v.firedN||0}</b>`;
+}
+const CAPS={
+  flat:`<b>Flat control.</b> Square tiles on a torus, [[18, 2, 3]]: 18 qubits on edges storing 2 logical bits. A check (diamond) fires when the errors around it fail a parity test. Any error smaller than d = 3 gets caught.`,
+  hyp:`<b>Curved storage.</b> The Bring surface: five pentagons meet at every corner: too much surface to flatten, so it folds through 3D (genus 4). Same local rules as the flat code but [[30, 8, 3]]: 8 logical bits from 30 qubits, 2.4&times; the flat rate. Curvature packs more logic per atom; the cost is distance stays low.`,
+  br_coarse:`<b>Exhaled: storage mode.</b> Dense, curved, cheap to hold. Press <b>Inhale</b> (or auto-breathe) to armor up.`,
+  br_in:`<b>Inhaling.</b> Atoms fly in from the reservoir: every edge splits in two, every tile subdivides. The flash is the fold round: one deterministic parity per old tile stitches the old and new detector records together.`,
+  br_fine:`<b>Inhaled: armor mode.</b> Distance doubled 3 → 6 with the same logical bits: an undetectable error now needs twice the length. Price: 4&times; the atoms while inhaled.`,
+  br_out:`<b>Exhaling.</b> Breath atoms are measured out and returned; their outcomes fold into the record. Errors that landed on them leave with them; errors on the surviving qubits stay.`
+};
+function setCap(){
+  if(tab==='flat')capEl.innerHTML=CAPS.flat;
+  else if(tab==='hyp')capEl.innerHTML=CAPS.hyp;
+  else capEl.innerHTML=CAPS['br_'+({coarse:'coarse',inhaling:'in',fine:'fine',exhaling:'out'})[active.st.phase]];
+}
+
+function activate(name,code){
+  tab=name;
+  ['tabFlat','tabHyp','tabBr'].forEach(id=>$(id).classList.remove('on'));
+  $({flat:'tabFlat',hyp:'tabHyp',breathe:'tabBr'}[name]).classList.add('on');
+  const want=name==='flat'?'torus':name==='hyp'?'bring':code||breathCode;
+  const v=getView(want);
+  if(v!==active){active.root.visible=false;active=v;active.root.visible=true;}
+  if(name!=='breathe')snapCoarse(active);
+  $('secPhase').style.display=name==='breathe'?'':'none';
+  $('cdT').className='b'+(want==='torus'?' hot':'');
+  $('cdB').className='b'+(want==='bring'?' hot':'');
+  refreshAll(active);setCap();
+}
+$('tabFlat').onclick=()=>activate('flat');
+$('tabHyp').onclick=()=>activate('hyp');
+$('tabBr').onclick=()=>activate('breathe');
+$('cdT').onclick=()=>{breathCode='torus';activate('breathe','torus');};
+$('cdB').onclick=()=>{breathCode='bring';activate('breathe','bring');};
+$('btnBreath').onclick=()=>{active.st.phase==='fine'?startExhale(active):startInhale(active);};
+$('ckAuto').onchange=e=>{active.st.auto=e.target.checked;};
+$('btnPlay').onclick=()=>{playing=!playing;$('btnPlay').textContent=playing?'Pause':'Play';};
+$('btnBurst').onclick=()=>{const v=active,L=liveIds(v);
+  for(let i=0;i<4;i++){const id=L[Math.floor(Math.random()*L.length)];
+    if(v.st.errors.has(id))v.st.errors.delete(id);else v.st.errors.add(id);}
+  refreshAll(v);};
+$('btnClear').onclick=()=>{active.st.errors.clear();refreshAll(active);};
+$('slP').oninput=e=>{pErr=+e.target.value;$('vP').textContent=(pErr*100).toFixed(1)+'%';};
+$('slS').oninput=e=>{setHz(+e.target.value);$('vS').textContent=(+e.target.value).toFixed(1)+'/s';};
+$('ckLog').onchange=e=>{showLog=e.target.checked;syncLogical(active);};
+$('ckTiles').onchange=e=>{showTiles=e.target.checked;syncTiles(active);};
+$('ckSpin').onchange=e=>{spin=e.target.checked;};
+$('ptog').onclick=()=>$('panel').classList.toggle('open');
+$('ckSpin').checked=spin;
+
+/* ---------- main loop ---------- */
+function resize(){
+  const w=innerWidth,h=innerHeight;
+  renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();
+  if(!userZoomed)cam.r=Math.min(9,3.6/Math.min(1,camera.aspect));
+  applyCam();
+}
+addEventListener('resize',resize);resize();
+
+function frame(t){
+  _n=t;
+  for(let i=tweens.length-1;i>=0;i--){
+    const tw=tweens[i];
+    if(t<tw.t0)continue;
+    const u=Math.min(1,(t-tw.t0)/tw.dur);
+    tw.fn(u);
+    if(u>=1){tweens.splice(i,1);if(tw.done)tw.done();}
+  }
+  if(spin){cam.th+=0.0016;applyCam();}
+  active.resGrp.rotation.y+=RM?0:0.0022;
+  /* pulses */
+  for(const id in active.qubits){
+    const m=active.qubits[id].mesh;
+    let p=m.userData.pulse||0;
+    const s=1+0.32*Math.max(0,p)*(0.6+0.4*Math.sin(t*0.009));
+    m.scale.setScalar(s);
+    if(p>0&&!active.st.errors.has(id))m.userData.pulse=Math.max(0,p-0.06);
+  }
+  for(const key in active.marks){
+    const m=active.marks[key].mesh;
+    const hot=m.userData.hot;
+    const tg=hot?1.9+0.25*Math.sin(t*0.012):1;
+    m.userData.s=(m.userData.s||1)+(tg-(m.userData.s||1))*0.2;
+    m.scale.setScalar(m.userData.s);
+  }
+  renderer.render(scene,camera);
+  requestAnimationFrame(frame);
+}
+activate('flat');
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

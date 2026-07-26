@@ -19,6 +19,8 @@
 
 **One code block whose curvature is a runtime variable: coarse and curved to store densely, fine and flat to protect, morphed fault-tolerantly on demand.**
 
+An interactive 3D demo of the morph (the flat torus, the Bring surface, and the breathing cycle, with n, k, and d computed live in the page) is at [demo.html](https://kansari123.github.io/Breathing-codes-quantum-LDPC-memories/demo.html); it goes live with the project page.
+
 ## The approach
 
 Hyperbolic quantum LDPC codes store many logical qubits per physical qubit, at low distance. Fine-graining the tiling flattens it and buys distance, at quadratic qubit cost. Every existing construction fixes that trade at design time. A breathing code makes it a schedule: the block sits in a dense curved phase to store, inhales (quad refinement, borrowed qubits from a reservoir) into a flatter high-distance phase for a compute window or a noise burst, then exhales the qubits back. Both directions are code deformation with one deterministic fold detector per refined face, so decoding runs through the morph without interruption. The number of logical qubits is pinned by topology the whole time.
