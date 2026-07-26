@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 240" role="img" aria-label="Lattice tiles refining from coarse to fine, left to right">
+<path d="M 20 120 C 170 20, 430 20, 600 120 C 770 220, 1030 220, 1180 120" fill="none" stroke="#333b4b" stroke-width="3"/>
+<rect x="75" y="45" width="150" height="150" fill="none" stroke="#e7eaf0" stroke-width="4" rx="2"/>
+<circle cx="75" cy="45" r="7" fill="#e7eaf0"/>
+<circle cx="225" cy="45" r="7" fill="#e7eaf0"/>
+<circle cx="75" cy="195" r="7" fill="#e7eaf0"/>
+<circle cx="225" cy="195" r="7" fill="#e7eaf0"/>
+<rect x="255" y="45" width="150" height="150" fill="none" stroke="#e7eaf0" stroke-width="4" rx="2"/>
+<circle cx="255" cy="45" r="7" fill="#e7eaf0"/>
+<circle cx="405" cy="45" r="7" fill="#e7eaf0"/>
+<circle cx="255" cy="195" r="7" fill="#e7eaf0"/>
+<circle cx="405" cy="195" r="7" fill="#e7eaf0"/>
+<rect x="435" y="45" width="150" height="150" fill="none" stroke="#e7eaf0" stroke-width="4" rx="2"/>
+<circle cx="435" cy="45" r="7" fill="#e7eaf0"/>
+<circle cx="585" cy="45" r="7" fill="#e7eaf0"/>
+<circle cx="435" cy="195" r="7" fill="#e7eaf0"/>
+<circle cx="585" cy="195" r="7" fill="#e7eaf0"/>
+<line x1="510.0" y1="120.0" x2="510.0" y2="45" stroke="#7cb3ff" stroke-width="3.5" stroke-dasharray="7 7"/>
+<line x1="510.0" y1="120.0" x2="510.0" y2="195" stroke="#7cb3ff" stroke-width="3.5" stroke-dasharray="7 7"/>
+<line x1="510.0" y1="120.0" x2="435" y2="120.0" stroke="#7cb3ff" stroke-width="3.5" stroke-dasharray="7 7"/>
+<line x1="510.0" y1="120.0" x2="585" y2="120.0" stroke="#7cb3ff" stroke-width="3.5" stroke-dasharray="7 7"/>
+<circle cx="510.0" cy="45" r="6" fill="#7cb3ff"/>
+<circle cx="510.0" cy="195" r="6" fill="#7cb3ff"/>
+<circle cx="435" cy="120.0" r="6" fill="#7cb3ff"/>
+<circle cx="585" cy="120.0" r="6" fill="#7cb3ff"/>
+<circle cx="510.0" cy="120.0" r="6" fill="#7cb3ff"/>
+<rect x="615" y="45" width="150" height="150" fill="none" stroke="#e7eaf0" stroke-width="4" rx="2"/>
+<circle cx="615" cy="45" r="7" fill="#e7eaf0"/>
+<circle cx="765" cy="45" r="7" fill="#e7eaf0"/>
+<circle cx="615" cy="195" r="7" fill="#e7eaf0"/>
+<circle cx="765" cy="195" r="7" fill="#e7eaf0"/>
+<line x1="690.0" y1="120.0" x2="690.0" y2="45" stroke="#7cb3ff" stroke-width="3.5" stroke-dasharray="7 7"/>
+<line x1="690.0" y1="120.0" x2="690.0" y2="195" stroke="#7cb3ff" stroke-width="3.5" stroke-dasharray="7 7"/>
+<line x1="690.0" y1="120.0" x2="615" y2="120.0" stroke="#7cb3ff" stroke-width="3.5" stroke-dasharray="7 7"/>
+<line x1="690.0" y1="120.0" x2="765" y2="120.0" stroke="#7cb3ff" stroke-width="3.5" stroke-dasharray="7 7"/>
+<circle cx="690.0" cy="45" r="6" fill="#7cb3ff"/>
+<circle cx="690.0" cy="195" r="6" fill="#7cb3ff"/>
+<circle cx="615" cy="120.0" r="6" fill="#7cb3ff"/>
+<circle cx="765" cy="120.0" r="6" fill="#7cb3ff"/>
+<circle cx="690.0" cy="120.0" r="6" fill="#7cb3ff"/>
+<rect x="795" y="45" width="150" height="150" fill="none" stroke="#e7eaf0" stroke-width="4" rx="2"/>
+<circle cx="795" cy="45" r="7" fill="#e7eaf0"/>
+<circle cx="945" cy="45" r="7" fill="#e7eaf0"/>
+<circle cx="795" cy="195" r="7" fill="#e7eaf0"/>
+<circle cx="945" cy="195" r="7" fill="#e7eaf0"/>
+<line x1="870.0" y1="120.0" x2="870.0" y2="45" stroke="#7cb3ff" stroke-width="3.5"/>
+<line x1="870.0" y1="120.0" x2="870.0" y2="195" stroke="#7cb3ff" stroke-width="3.5"/>
+<line x1="870.0" y1="120.0" x2="795" y2="120.0" stroke="#7cb3ff" stroke-width="3.5"/>
+<line x1="870.0" y1="120.0" x2="945" y2="120.0" stroke="#7cb3ff" stroke-width="3.5"/>
+<circle cx="870.0" cy="45" r="6" fill="#7cb3ff"/>
+<circle cx="870.0" cy="195" r="6" fill="#7cb3ff"/>
+<circle cx="795" cy="120.0" r="6" fill="#7cb3ff"/>
+<circle cx="945" cy="120.0" r="6" fill="#7cb3ff"/>
+<circle cx="870.0" cy="120.0" r="6" fill="#7cb3ff"/>
+<rect x="975" y="45" width="150" height="150" fill="none" stroke="#e7eaf0" stroke-width="4" rx="2"/>
+<circle cx="975" cy="45" r="7" fill="#e7eaf0"/>
+<circle cx="1125" cy="45" r="7" fill="#e7eaf0"/>
+<circle cx="975" cy="195" r="7" fill="#e7eaf0"/>
+<circle cx="1125" cy="195" r="7" fill="#e7eaf0"/>
+<line x1="1050.0" y1="120.0" x2="1050.0" y2="45" stroke="#7cb3ff" stroke-width="3.5"/>
+<line x1="1050.0" y1="120.0" x2="1050.0" y2="195" stroke="#7cb3ff" stroke-width="3.5"/>
+<line x1="1050.0" y1="120.0" x2="975" y2="120.0" stroke="#7cb3ff" stroke-width="3.5"/>
+<line x1="1050.0" y1="120.0" x2="1125" y2="120.0" stroke="#7cb3ff" stroke-width="3.5"/>
+<circle cx="1050.0" cy="45" r="6" fill="#7cb3ff"/>
+<circle cx="1050.0" cy="195" r="6" fill="#7cb3ff"/>
+<circle cx="975" cy="120.0" r="6" fill="#7cb3ff"/>
+<circle cx="1125" cy="120.0" r="6" fill="#7cb3ff"/>
+<circle cx="1050.0" cy="120.0" r="6" fill="#7cb3ff"/>
+</svg>
