@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.DS_Store
+# run_all.sh / repro byproducts (canonical copies live in data/ and figures/)
+code/results.json
+code/*.png
+code/*.log
+code/log_*.txt
+code/s[0-9].log

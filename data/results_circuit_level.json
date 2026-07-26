@@ -1,0 +1,70 @@
+{
+ "torus_L3": {
+  "schedule_seed": null,
+  "p": 0.001,
+  "shots": 20000,
+  "data": {
+   "8": {
+    "coarse": 0.01575,
+    "breathe": 0.01945,
+    "fine": 0.0009
+   },
+   "12": {
+    "coarse": 0.0243,
+    "breathe": 0.0223,
+    "fine": 0.0013
+   },
+   "16": {
+    "coarse": 0.0309,
+    "breathe": 0.0209,
+    "fine": 0.00125
+   },
+   "24": {
+    "coarse": 0.04565,
+    "breathe": 0.021,
+    "fine": 0.00205
+   },
+   "48": {
+    "coarse": 0.08875,
+    "breathe": 0.0243,
+    "fine": 0.0058
+   }
+  }
+ },
+ "bring_30_8": {
+  "schedule_seed": 8,
+  "p": 0.001,
+  "shots": 20000,
+  "data": {
+   "8": {
+    "coarse": 0.0947,
+    "breathe": 0.11075,
+    "fine": 0.00185
+   },
+   "12": {
+    "coarse": 0.13985,
+    "breathe": 0.1192,
+    "fine": 0.0034
+   },
+   "16": {
+    "coarse": 0.1843,
+    "breathe": 0.11435,
+    "fine": 0.00495
+   },
+   "24": {
+    "coarse": 0.26285,
+    "breathe": 0.11645,
+    "fine": 0.0064
+   },
+   "48": {
+    "coarse": 0.4561,
+    "breathe": 0.1213,
+    "fine": 0.013
+   }
+  }
+ },
+ "hernia_price_T48": {
+  "breathe_seed3_hernia": 0.1216,
+  "breathe_seed8_safe": 0.1213
+ }
+}
